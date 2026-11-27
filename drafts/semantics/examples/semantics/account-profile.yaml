@@ -1,3 +1,5 @@
 format: text/turtle
 sources: [glossary]
-file: ./account.ttl
+spec: |
+  @prefix ex: <https://example.org/> .
+  ex:Account a ex:Payload .

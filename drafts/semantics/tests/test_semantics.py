@@ -59,6 +59,7 @@ class SemanticsTests(unittest.TestCase):
         cases = [
             {'payloads': {'other': {'format': 'text/turtle', 'spec': 'x'}}},
             {'payloads': {'default': {'format': 'text/turtle', 'spec': 'x', 'file': 'x'}}},
+            {'payloads': {'default': {'format': 'text/turtle', 'file': 'x'}}},
             {'payloads': {'default': {'format': 'text/turtle'}}},
             {'sources': {'a': {'name': 'A'}}},
             {'payloads': {'default': {'$ref': 'x', 'format': 'text/turtle'}}},
@@ -69,11 +70,11 @@ class SemanticsTests(unittest.TestCase):
                 self.assertTrue(self.check()[0])
 
     def test_unknown_source_missing_artifact_and_target(self):
-        self.sem['payloads']['transactions']['sources'] = ['unknown']
-        self.sem['payloads']['transactions']['file'] = 'missing.ttl'
+        self.sem['product']['sources'] = ['unknown']
+        self.sem['payloads']['transactions']['$ref'] = 'missing.ttl'
         self.product['product']['dataAccess']['default']['semantics']['bindings'][0]['semantics']['$ref'] = '#/product/semantics/payloads/missing'
         errors, _ = self.check()
-        for phrase in ('unknown source', 'missing local artifact', 'profile not found'):
+        for phrase in ('unknown source', 'cannot read semantic artifact', 'profile not found'):
             self.assertTrue(any(phrase in e for e in errors), errors)
 
     def test_turtle_and_unsupported_format(self):
@@ -83,6 +84,11 @@ class SemanticsTests(unittest.TestCase):
         errors, unchecked = self.check()
         self.assertEqual(errors, [])
         self.assertTrue(any('content parsing not performed' in x for x in unchecked))
+
+    def test_direct_turtle_reference_and_malformed_turtle(self):
+        self.assertEqual(self.check()[0], [])
+        (self.root / 'examples/semantics/transactions.ttl').write_text('invalid turtle ;')
+        self.assertTrue(any('invalid Turtle' in e for e in self.check()[0]))
 
     def test_cycle_and_unresolved_remote(self):
         profile = self.root / 'examples/semantics/account-profile.yaml'

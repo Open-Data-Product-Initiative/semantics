@@ -55,7 +55,7 @@ def check(path):
     shape(root)
     if errors:
         return errors, unchecked
-    def resolve(value, base, document, stack=()):
+    def resolve(value, base, document, stack=(), allow_artifact=False):
         while isinstance(value, dict) and set(value) == {'$ref'}:
             ref = value['$ref']
             parsed = urlsplit(ref)
@@ -67,6 +67,17 @@ def check(path):
             if marker in stack:
                 errors.append(f'reference cycle: {ref}')
                 return None, base, document
+            if allow_artifact and parsed.path and target.suffix.lower() not in ('.yaml', '.yml', '.json'):
+                if parsed.fragment:
+                    errors.append(f'semantic artifact reference cannot have a fragment: {ref}')
+                    return None, base, document
+                try:
+                    content = target.read_text(encoding='utf-8')
+                except (OSError, UnicodeError) as exc:
+                    errors.append(f'cannot read semantic artifact {ref}: {exc}')
+                    return None, base, document
+                fmt = {'.ttl': 'text/turtle', '.jsonld': 'application/ld+json'}.get(target.suffix.lower())
+                return ('semantic-artifact', content, fmt, ref), target, document
             try:
                 target_doc = document if target == base else load(target)
                 value = pointer(target_doc, unquote(parsed.fragment))
@@ -104,8 +115,11 @@ def check(path):
             errors.append(f"{label}: invalid Turtle: {exc}")
 
     def document(value, base, container, label):
-        value, base, container = resolve(value, base, container)
+        value, base, container = resolve(value, base, container, allow_artifact=True)
         if value is None:
+            return
+        if isinstance(value, tuple) and value[0] == 'semantic-artifact':
+            parse_content(value[1], value[2] or 'unknown', label)
             return
         previous_errors = len(errors)
         shape(value, 'SemanticDocument')
@@ -114,21 +128,7 @@ def check(path):
         for source in value.get('sources', []):
             if source not in sources:
                 errors.append(f'{label}: unknown source {source}')
-        if 'file' in value:
-            ref = value['file']
-            parsed = urlsplit(ref)
-            if parsed.scheme or parsed.netloc:
-                unchecked.append(f'{label}: remote artifact not checked: {ref}')
-            elif not (base.parent / unquote(parsed.path)).is_file():
-                errors.append(f'{label}: missing local artifact {ref}')
-            else:
-                try:
-                    content = (base.parent / unquote(parsed.path)).read_text(encoding='utf-8')
-                    parse_content(content, value['format'], label)
-                except (OSError, UnicodeError) as exc:
-                    errors.append(f'{label}: cannot read artifact {ref}: {exc}')
-        elif 'spec' in value:
-            parse_content(value['spec'], value['format'], label)
+        parse_content(value['spec'], value['format'], label)
     if 'product' in sem:
         document(sem['product'], sem_base, sem_doc, 'product')
     for name, value in profiles.items():

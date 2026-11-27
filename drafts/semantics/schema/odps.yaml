@@ -1109,21 +1109,10 @@ $defs:
         minItems: 1
         uniqueItems: true
       spec: *id001
-      file: *id002
     required:
     - format
+    - spec
     additionalProperties: false
-    oneOf:
-    - required:
-      - spec
-      not:
-        required:
-        - file
-    - required:
-      - file
-      not:
-        required:
-        - spec
   SemanticProfile:
     oneOf:
     - $ref: '#/$defs/SemanticDocument'

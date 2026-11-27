@@ -13,5 +13,4 @@ payloads:
   default:
     $ref: ./account-profile.yaml
   transactions:
-    format: text/turtle
-    file: ./transactions.ttl
+    $ref: ./transactions.ttl

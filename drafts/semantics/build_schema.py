@@ -14,8 +14,7 @@ string = {'type': 'string', 'minLength': 1}
 uri = {'type': 'string', 'format': 'uri-reference', 'minLength': 1}
 closed = lambda properties, required=(): {'type': 'object', 'properties': properties, 'required': list(required), 'additionalProperties': False}
 reference = closed({'$ref': uri}, ['$ref'])
-doc = closed({'format': string, 'version': string, 'description': string, 'sources': {'type': 'array', 'items': string, 'minItems': 1, 'uniqueItems': True}, 'spec': string, 'file': uri}, ['format'])
-doc['oneOf'] = [{'required': ['spec'], 'not': {'required': ['file']}}, {'required': ['file'], 'not': {'required': ['spec']}}]
+doc = closed({'format': string, 'version': string, 'description': string, 'sources': {'type': 'array', 'items': string, 'minItems': 1, 'uniqueItems': True}, 'spec': string}, ['format', 'spec'])
 source = closed({'name': string, 'type': string, 'url': uri, 'apiURL': uri, 'description': string}, ['name'])
 profiles = {'type': 'object', 'properties': {'default': ref('SemanticProfile')}, 'required': ['default'], 'additionalProperties': ref('SemanticProfile'), 'minProperties': 1}
 semantics = closed({'sources': {'type': 'object', 'minProperties': 1, 'additionalProperties': source}, 'product': ref('SemanticProfile'), 'payloads': profiles})

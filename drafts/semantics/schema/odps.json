@@ -1442,39 +1442,13 @@
                 "spec": {
                     "type": "string",
                     "minLength": 1
-                },
-                "file": {
-                    "type": "string",
-                    "format": "uri-reference",
-                    "minLength": 1
                 }
             },
             "required": [
-                "format"
+                "format",
+                "spec"
             ],
-            "additionalProperties": false,
-            "oneOf": [
-                {
-                    "required": [
-                        "spec"
-                    ],
-                    "not": {
-                        "required": [
-                            "file"
-                        ]
-                    }
-                },
-                {
-                    "required": [
-                        "file"
-                    ],
-                    "not": {
-                        "required": [
-                            "spec"
-                        ]
-                    }
-                }
-            ]
+            "additionalProperties": false
         },
         "SemanticProfile": {
             "oneOf": [
