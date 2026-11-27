@@ -6,9 +6,38 @@ The OPTIONAL `product.semantics` object describes the meaning of the data produc
 
 A semantics object MUST contain a `product` description, `payloads`, or both. `sources` MAY identify the systems used to create those descriptions. If `payloads` is present, it MUST include a profile named `default`. A product description can be used on its own, without payloads, Data Access or source systems.
 
+## Mandatory attributes and elements
+
+Data Semantics is OPTIONAL for a product. The requirements below apply only when the relevant object is provided. A semantics object MUST contain a product description, payload profiles, or both.
+
+> Example of the required fields in an inline payload profile:
+
+```yml
+product:
+  semantics:
+    payloads:
+      default:
+        format: text/turtle
+        spec: |
+          @prefix ex: <https://example.org/> .
+          ex:Account a ex:Payload .
+```
+
+| <div style="width:150px">Element name</div> | Type | Options | Description |
+|---|---|---|---|
+| **product or payloads** | object or reference object | At least one REQUIRED | A semantics object MUST contain a product description, payload profiles, or both. A standalone `$ref` MAY replace the whole semantics object. |
+| **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
+| **format** | string | REQUIRED in a document description | Format of the semantic document, preferably a media type such as `text/turtle` or `application/ld+json`. |
+| **spec or file** | string or URI-reference | Exactly one REQUIRED in a document description | `spec` contains inline text; `file` locates the semantic document. They MUST NOT be used together. |
+| **name** | string | REQUIRED for each source system | Human-readable source system name, when `sources` is provided. |
+| **operationId** | string | REQUIRED in each access binding | Identifier of an operation in the interface's API specification. |
+| **semantics** | reference object | REQUIRED in each access binding | Reference to one named semantic payload profile. |
+
+A product or payload description MAY instead be a standalone `$ref` to a complete external profile. That reference object MUST contain only `$ref`; the resolved profile MUST meet the document requirements above.
+
 ## Optional attributes and elements
 
-> Example of Data Semantics with product and payload descriptions:
+> Example of optional source systems and external payload profiles:
 
 ```yml
 product:
@@ -71,9 +100,8 @@ The profile's `$ref` identifies an ODPS semantic description, while its `file` i
 |---|---|---|---|
 | **semantics** | object or reference object | OPTIONAL | Top-level product component. Contains `product`, `payloads`, or both, and optionally `sources`; alternatively, `$ref` identifies an external complete semantics object. |
 | **sources** | object | OPTIONAL | Named source systems shared by the descriptions. Each key is a source identifier, such as `enterpriseGlossary`. The object MUST contain at least one entry when present. |
-| **product** | object or reference object | OPTIONAL | Semantic document describing the product as a whole. Uses the semantic document fields below, or `$ref` to a complete document description. |
+| **product** | object or reference object | OPTIONAL | Semantic document describing the product as a whole. Uses the document fields or `$ref` to a complete description. |
 | **payloads** | object | OPTIONAL | Named payload semantic profiles. MUST include `default`; additional profiles MAY describe other payloads. Each value uses the semantic document fields below or a reference to a complete profile. |
-| **default** | object or reference object | REQUIRED when `payloads` is present | The default payload profile. The same requirement applies to an externally loaded semantics object. |
 | **$ref** | URI-reference | REQUIRED in a reference object | References an external semantics object or a complete product or payload description. A reference object has no sibling fields. |
 
 ### Semantic source fields
@@ -82,7 +110,6 @@ A source describes a system used to create or support a semantic description. It
 
 | Element name | Type | Options | Description |
 |---|---|---|---|
-| **name** | string | REQUIRED | Human-readable source system name. |
 | **type** | string | OPTIONAL | Extensible description of the system type, such as `vocabulary-service` or `semantic-repository`. |
 | **url** | URI-reference | OPTIONAL | Location of a human-readable service or repository. |
 | **apiURL** | URI-reference | OPTIONAL | Machine-readable service endpoint. |
@@ -94,9 +121,6 @@ The following fields apply to both `semantics.product` and each named `semantics
 
 | Element name | Type | Options | Description |
 |---|---|---|---|
-| **format** | string | REQUIRED | Format of the semantic document, preferably a media type such as `text/turtle` or `application/ld+json`. This is separate from the format of the delivered data. |
-| **spec** | string | REQUIRED if `file` is absent | Complete inline semantic document as text. MUST NOT appear with `file`. |
-| **file** | URI-reference | REQUIRED if `spec` is absent | Location of the semantic document. MUST NOT appear with `spec`. |
 | **version** | string | OPTIONAL | Version of this semantic document, distinct from the product, vocabulary and source-system versions. |
 | **description** | string | OPTIONAL | Human-readable summary of the document. |
 | **sources** | array of strings | OPTIONAL | Nonempty list of unique source identifiers defined in `product.semantics.sources`. |
@@ -116,7 +140,7 @@ product:
         $ref: '#/product/semantics/payloads/default'
 ```
 
-For interfaces with multiple payloads, `bindings` identifies each applicable profile by API operation and, where needed, response status and media type. The API specification remains the authority for the operation and response definitions.
+For interfaces with multiple payloads, `bindings` identifies each applicable profile by API operation and, where needed, response status and media type. Each binding MUST include an `operationId` unique within the API specification and a `semantics` reference to one named profile under `#/product/semantics/payloads/`. The API specification remains the authority for the operation and response definitions.
 
 > Example of bindings for two API responses:
 
@@ -144,10 +168,8 @@ product:
 |---|---|---|---|
 | **semantics** | reference object or object | OPTIONAL | On a Data Access profile, either a single reference to a named payload profile or an object containing `bindings`. |
 | **bindings** | array | REQUIRED for multiple selectors | Nonempty list of operation-to-payload bindings. Each entry contains `operationId` and `semantics` and may include `status` and `mediaType`. |
-| **operationId** | string | REQUIRED | Identifier of an operation in the interface's API specification. It must be unique within that specification. |
 | **status** | string | OPTIONAL | Three-digit HTTP response status such as `'200'`, or `default` for the response named `default` in the API specification. |
 | **mediaType** | string | OPTIONAL | Media type of the response representation, such as `application/json`. |
-| **semantics** | reference object | REQUIRED in each binding | `$ref` to exactly one named profile under `#/product/semantics/payloads/`. |
 
 An omitted `status` or `mediaType` selects all values of that dimension. Bindings for the same operation MUST NOT overlap: for example, a binding without `status` overlaps one for `'200'`. A profile that applies to several responses must describe each covered payload. Unlisted operations and responses make no semantic claim. Escape `~` as `~0` and `/` as `~1` in profile names used in JSON Pointer references.
 
