@@ -3,7 +3,7 @@ sources:
     name: Enterprise glossary
     type: vocabulary-service
     url: https://example.org/glossary
-product:
+productSemantics:
   format: text/turtle
   sources: [glossary]
   spec: |

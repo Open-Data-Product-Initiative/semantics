@@ -129,8 +129,8 @@ def check(path):
             if source not in sources:
                 errors.append(f'{label}: unknown source {source}')
         parse_content(value['spec'], value['format'], label)
-    if 'product' in sem:
-        document(sem['product'], sem_base, sem_doc, 'product')
+    if 'productSemantics' in sem:
+        document(sem['productSemantics'], sem_base, sem_doc, 'product semantics')
     for name, value in profiles.items():
         document(value, sem_base, sem_doc, f'payload {name}')
     access = product.get('dataAccess', {})

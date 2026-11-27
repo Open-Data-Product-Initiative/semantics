@@ -1134,7 +1134,7 @@ $defs:
           required:
           - name
           additionalProperties: false
-      product:
+      productSemantics:
         $ref: '#/$defs/SemanticProfile'
       payloads:
         type: object
@@ -1150,7 +1150,7 @@ $defs:
     additionalProperties: false
     anyOf:
     - required:
-      - product
+      - productSemantics
     - required:
       - payloads
   Semantics:

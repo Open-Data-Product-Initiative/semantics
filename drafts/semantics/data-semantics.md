@@ -4,7 +4,7 @@
 
 The OPTIONAL `product.semantics` object describes the meaning of the data product and its payloads. It is a top-level product component alongside Data Access and Data SLA. Semantic descriptions can be included under `spec` or referenced as separate files with `$ref`. Named payload profiles let Data Access interfaces identify the description that applies to the data they deliver.
 
-A semantics object MUST contain a `product` description, `payloads`, or both. `sources` MAY identify the systems used to create those descriptions. If `payloads` is present, it MUST include a profile named `default`. A product description can be used on its own, without payloads, Data Access or source systems.
+A semantics object MUST contain `productSemantics`, `payloads`, or both. `sources` MAY identify the systems used to create those descriptions. If `payloads` is present, it MUST include a profile named `default`. A product description can be used on its own, without payloads, Data Access or source systems.
 
 ## Mandatory attributes and elements
 
@@ -46,7 +46,7 @@ product:
         name: Enterprise glossary
         type: vocabulary-service
         url: https://example.org/glossary
-    product:
+    productSemantics:
       format: text/turtle
       sources: [enterpriseGlossary]
       spec: |
@@ -69,7 +69,7 @@ product:
     $ref: ./semantics/semantics.yaml
 ```
 
-The external file contains the complete `sources`, `product` and/or `payloads` object. A reference object MUST contain only `$ref`.
+The external file contains the complete `sources`, `productSemantics` and/or `payloads` object. A reference object MUST contain only `$ref`.
 
 > Example of an external payload profile:
 
@@ -99,10 +99,10 @@ This profile's `$ref` identifies an external ODPS profile containing the inline 
 
 | Element name | Type | Options | Description |
 |---|---|---|---|
-| **semantics** | object or reference object | OPTIONAL | Top-level product component. Contains `product`, `payloads`, or both, and optionally `sources`; alternatively, `$ref` identifies an external complete semantics object. |
+| **semantics** | object or reference object | OPTIONAL | Top-level product component. Contains `productSemantics`, `payloads`, or both, and optionally `sources`; alternatively, `$ref` identifies an external complete semantics object. |
 | **sources** | object | OPTIONAL | Named source systems shared by the descriptions. Each key is a source identifier, such as `enterpriseGlossary`. The object MUST contain at least one entry when present; no maximum number or key length is specified. |
-| **product** | object or reference object | OPTIONAL | Semantic document describing the product as a whole. Uses the document fields or `$ref` to a complete description. Include `product`, `payloads`, or both. |
-| **payloads** | object | OPTIONAL | Named payload semantic profiles. No maximum number or profile-name length is specified. Include `product`, `payloads`, or both. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields or a reference to an external semantic document or profile. |
+| **productSemantics** | object or reference object | OPTIONAL | Semantic document describing the product as a whole. Uses the document fields or `$ref` to a complete description. Include `productSemantics`, `payloads`, or both. |
+| **payloads** | object | OPTIONAL | Named payload semantic profiles. No maximum number or profile-name length is specified. Include `productSemantics`, `payloads`, or both. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields or a reference to an external semantic document or profile. |
 | **$ref** | URI-reference | REQUIRED in a reference object | References an external semantics object, semantic document or complete product or payload profile. A reference object has no sibling fields. Minimum 1 character; no maximum length is specified. URI references follow [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html); internal JSON Pointer fragments follow [RFC 6901](https://www.rfc-editor.org/rfc/rfc6901.html). |
 
 ### Semantic source fields
@@ -118,7 +118,7 @@ A source describes a system used to create or support a semantic description. It
 
 ### Semantic document fields
 
-The following fields apply to both `semantics.product` and each named `semantics.payloads` profile. A standalone `$ref` may be used instead of these fields.
+The following fields apply to both `semantics.productSemantics` and each named `semantics.payloads` profile. A standalone `$ref` may be used instead of these fields.
 
 | Element name | Type | Options | Description |
 |---|---|---|---|

@@ -1498,7 +1498,7 @@
                         "additionalProperties": false
                     }
                 },
-                "product": {
+                "productSemantics": {
                     "$ref": "#/$defs/SemanticProfile"
                 },
                 "payloads": {
@@ -1522,7 +1522,7 @@
             "anyOf": [
                 {
                     "required": [
-                        "product"
+                        "productSemantics"
                     ]
                 },
                 {

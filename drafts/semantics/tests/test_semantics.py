@@ -62,6 +62,7 @@ class SemanticsTests(unittest.TestCase):
             {'payloads': {'default': {'format': 'text/turtle', 'file': 'x'}}},
             {'payloads': {'default': {'format': 'text/turtle'}}},
             {'sources': {'a': {'name': 'A'}}},
+            {'product': {'format': 'text/turtle', 'spec': 'x'}},
             {'payloads': {'default': {'$ref': 'x', 'format': 'text/turtle'}}},
         ]
         for sem in cases:
@@ -70,7 +71,7 @@ class SemanticsTests(unittest.TestCase):
                 self.assertTrue(self.check()[0])
 
     def test_unknown_source_missing_artifact_and_target(self):
-        self.sem['product']['sources'] = ['unknown']
+        self.sem['productSemantics']['sources'] = ['unknown']
         self.sem['payloads']['transactions']['$ref'] = 'missing.ttl'
         self.product['product']['dataAccess']['default']['semantics']['bindings'][0]['semantics']['$ref'] = '#/product/semantics/payloads/missing'
         errors, _ = self.check()
@@ -78,9 +79,9 @@ class SemanticsTests(unittest.TestCase):
             self.assertTrue(any(phrase in e for e in errors), errors)
 
     def test_turtle_and_unsupported_format(self):
-        self.sem['product']['spec'] = 'this is not Turtle ;'
+        self.sem['productSemantics']['spec'] = 'this is not Turtle ;'
         self.assertTrue(any('invalid Turtle' in e for e in self.check()[0]))
-        self.sem['product']['format'] = 'application/example'
+        self.sem['productSemantics']['format'] = 'application/example'
         errors, unchecked = self.check()
         self.assertEqual(errors, [])
         self.assertTrue(any('content parsing not performed' in x for x in unchecked))
