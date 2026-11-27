@@ -10,23 +10,22 @@ A semantics object MUST contain `productSemantics`, `payloads`, or both. `source
 
 Data Semantics is OPTIONAL for a product. When supplied, the `semantics` object MUST contain a product description, payload profiles, or both. The requirements below apply when the relevant object is provided.
 
-> Example of the required fields in an inline payload profile:
+> Example of the required fields when describing the product:
 
 ```yml
 product:
   semantics:
-    payloads:
-      default:
-        format: text/turtle
-        spec: |
-          @prefix ex: <https://example.org/> .
-          ex:Account a ex:Payload .
+    productSemantics:
+      format: text/turtle
+      spec: |
+        @prefix ex: <https://example.org/> .
+        ex:Accounts a ex:DataProduct .
 ```
 
 | <div style="width:150px">Element name</div> | Type | Options | Description |
 |---|---|---|---|
 | **semantics** | object or reference object | OPTIONAL for a product | Top-level Data Semantics component. When included, provide an inline object or a reference to a complete semantics object. |
-| **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
+| **productSemantics** | object or reference object | OPTIONAL; provide this, `payloads`, or both | Semantic description of the product as a whole. This example uses an inline document; a standalone `$ref` is also permitted. |
 | **format** | string | **REQUIRED.** One of:<ul><li><code>text/turtle</code></li><li><code>application/rdf+xml</code></li><li><code>application/ld+json</code></li><li><code>application/n-triples</code></li><li><code>application/trig</code></li><li><code>application/n-quads</code></li><li><code>application/json</code></li><li><code>application/yaml</code></li></ul> | Identifies the semantic document format. Media type names follow [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838.html). See the Semantic document formats table below for the format specifications. |
 | **spec** | string | REQUIRED in an inline document description | Complete semantic document as text. Minimum 1 character; no maximum length is specified. To reference external content, use a standalone `$ref` instead. |
 
@@ -98,8 +97,8 @@ This profile's `$ref` identifies an external ODPS profile containing the inline 
 | Element name | Type | Options | Description |
 |---|---|---|---|
 | **sources** | object | OPTIONAL | Named source systems shared by the descriptions. Each key is a source identifier, such as `enterpriseGlossary`. The object MUST contain at least one entry when present; no maximum number or key length is specified. |
-| **productSemantics** | object or reference object | OPTIONAL | Semantic document describing the product as a whole. Uses the document fields or `$ref` to a complete description. Include `productSemantics`, `payloads`, or both. |
 | **payloads** | object | OPTIONAL | Named payload semantic profiles. No maximum number or profile-name length is specified. Include `productSemantics`, `payloads`, or both. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields or a reference to an external semantic document or profile. |
+| **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
 | **$ref** | URI-reference | REQUIRED in a reference object | References an external semantics object, semantic document or complete product or payload profile. A reference object has no sibling fields. Minimum 1 character; no maximum length is specified. URI references follow [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html); internal JSON Pointer fragments follow [RFC 6901](https://www.rfc-editor.org/rfc/rfc6901.html). |
 
 ### Semantic source fields
