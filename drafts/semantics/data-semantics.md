@@ -26,7 +26,7 @@ product:
 | <div style="width:150px">Element name</div> | Type | Options | Description |
 |---|---|---|---|
 | **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
-| **format** | string | REQUIRED in a document description | Format of the semantic document. Nonempty; no maximum length is specified. Use a media type such as `text/turtle`, `application/rdf+xml`, `application/ld+json`, `application/json` or `application/yaml` where practical; see [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838.html). The schema accepts other format identifiers. |
+| **format** | string | REQUIRED in a document description | Format of the semantic document. MUST be one of the media types in the Semantic document formats table below: `text/turtle`, `application/rdf+xml`, `application/ld+json`, `application/n-triples`, `application/trig`, `application/n-quads`, `application/json` or `application/yaml`. See [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838.html). |
 | **spec** | string | REQUIRED in an inline document description | Complete semantic document as text. Minimum 1 character; no maximum length is specified. To reference external content, use a standalone `$ref` instead. |
 
 A product or payload description MAY instead be a standalone `$ref` to an external semantic document or a complete external profile. A reference object MUST contain only `$ref`; a referenced profile MUST meet the inline document requirements above.
@@ -126,7 +126,7 @@ The following fields apply to both `semantics.productSemantics` and each named `
 
 ### Semantic document formats
 
-The `format` field identifies the serialization of an inline semantic document. It is an open string, not a closed list. Media types are recommended where available; the following are examples, not mandatory formats or a claim that every validator supports them.
+The `format` field identifies the serialization of an inline semantic document and MUST use one of the following media types. Listing a format does not mean every validator can parse it.
 
 | Format | Media type | Typical file extension | Description |
 |---|---|---|---|
@@ -215,6 +215,6 @@ Resolve each relative `$ref` URI against the document containing it. Fragments i
 
 Data Access bindings are resolved against the **effective product document** after an external `product.semantics` object is loaded. Thus `#/product/semantics/payloads/default` targets the same effective location whether the semantics object is inline or external. Source names in external profiles are checked against that effective semantics object's `sources`.
 
-A direct reference to a semantic document has no sibling fields: its format and other metadata must be determined from the referenced artifact or its transport. Use a referenced ODPS profile with `format`, `spec` and optional metadata when those details must be carried in ODPS. Structural validation does not require network access. When checked, malformed references, missing local files and unknown source names are errors. Unsupported formats, unavailable parsers and unreachable remote resources are reported as not checked or unresolved. Syntax validity does not establish semantic correctness, approval or conformance. Validation against the API specification is a separate check.
+A direct reference to a semantic document has no sibling fields: its format and other metadata must be determined from the referenced artifact or its transport. Use a referenced ODPS profile with `format`, `spec` and optional metadata when those details must be carried in ODPS. Structural validation does not require network access. When checked, malformed references, missing local files and unknown source names are errors. An inline profile with a format outside the list is invalid. If a listed format has no available parser, content validation is reported as not checked; unreachable remote resources are reported as unresolved. Syntax validity does not establish semantic correctness, approval or conformance. Validation against the API specification is a separate check.
 
 Include local semantic documents and profile files when creating a portable package, preserving or consistently rewriting relative paths. Identify unresolved external dependencies. The schema does not require a particular vocabulary service, RDF format, data contract or generation tool. The existing `product.details.<language>.standards` field retains its existing meaning and is not a conformity assertion.

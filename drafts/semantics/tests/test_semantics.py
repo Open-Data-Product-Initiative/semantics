@@ -81,10 +81,20 @@ class SemanticsTests(unittest.TestCase):
     def test_turtle_and_unsupported_format(self):
         self.sem['productSemantics']['spec'] = 'this is not Turtle ;'
         self.assertTrue(any('invalid Turtle' in e for e in self.check()[0]))
-        self.sem['productSemantics']['format'] = 'application/example'
+        self.sem['productSemantics']['format'] = 'application/json'
         errors, unchecked = self.check()
         self.assertEqual(errors, [])
         self.assertTrue(any('content parsing not performed' in x for x in unchecked))
+
+    def test_format_options_are_enforced(self):
+        for media_type in ('text/turtle', 'application/rdf+xml', 'application/ld+json',
+                           'application/n-triples', 'application/trig', 'application/n-quads',
+                           'application/json', 'application/yaml'):
+            with self.subTest(media_type=media_type):
+                self.sem['productSemantics']['format'] = media_type
+                self.assertEqual(self.check()[0], [])
+        self.sem['productSemantics']['format'] = 'application/example'
+        self.assertTrue(self.check()[0])
 
     def test_direct_turtle_reference_and_malformed_turtle(self):
         self.assertEqual(self.check()[0], [])

@@ -1098,10 +1098,20 @@ $defs:
   SemanticDocument:
     type: object
     properties:
-      format: &id001
+      format:
+        type: string
+        enum:
+        - text/turtle
+        - application/rdf+xml
+        - application/ld+json
+        - application/n-triples
+        - application/trig
+        - application/n-quads
+        - application/json
+        - application/yaml
+      version: &id001
         type: string
         minLength: 1
-      version: *id001
       description: *id001
       sources:
         type: array

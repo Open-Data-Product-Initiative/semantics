@@ -1420,7 +1420,16 @@
             "properties": {
                 "format": {
                     "type": "string",
-                    "minLength": 1
+                    "enum": [
+                        "text/turtle",
+                        "application/rdf+xml",
+                        "application/ld+json",
+                        "application/n-triples",
+                        "application/trig",
+                        "application/n-quads",
+                        "application/json",
+                        "application/yaml"
+                    ]
                 },
                 "version": {
                     "type": "string",
