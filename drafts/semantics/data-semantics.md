@@ -113,6 +113,42 @@ A source describes a system used to create or support a semantic description. It
 | **description** | string | OPTIONAL | Explanation of the source system's role. Minimum 1 character; no maximum length is specified. |
 
 
+### Semantic document formats
+
+The `format` field identifies the serialization of an inline semantic document and MUST use one of the following media types. Listing a format does not mean every validator can parse it.
+
+| Format | Media type | Typical file extension | Description |
+|---|---|---|---|
+| [Turtle](https://www.w3.org/TR/turtle/) | `text/turtle` | `.ttl` | Human-readable RDF graph serialization. |
+| [RDF/XML](https://www.w3.org/TR/rdf-syntax-grammar/) | `application/rdf+xml` | `.rdf`, `.owl` | XML serialization of an RDF graph. |
+| [JSON-LD](https://www.w3.org/TR/json-ld11/) | `application/ld+json` | `.jsonld` | JSON-based linked-data format that can represent RDF. |
+| [N-Triples](https://www.w3.org/TR/n-triples/) | `application/n-triples` | `.nt` | Line-oriented RDF graph serialization. |
+| [TriG](https://www.w3.org/TR/trig/) | `application/trig` | `.trig` | Turtle-based RDF dataset serialization, including named graphs. |
+| [N-Quads](https://www.w3.org/TR/n-quads/) | `application/n-quads` | `.nq` | Line-oriented RDF dataset serialization. |
+| [JSON](https://www.rfc-editor.org/rfc/rfc8259.html) | `application/json` | `.json` | General-purpose JSON; the semantic document's own model defines its meaning. |
+| [YAML](https://www.rfc-editor.org/rfc/rfc9512.html) | `application/yaml` | `.yaml`, `.yml` | General-purpose YAML; the semantic document's own model defines its meaning. |
+
+RDF is a data model; Turtle, RDF/XML and other RDF formats are different ways to serialize it. JSON and YAML alone do not define semantic relationships. A source vocabulary, documented model or other semantic specification is needed to interpret their content. `spec` remains a string: inline JSON and YAML are written as text within the string, not as nested YAML or JSON objects.
+
+> Examples of references to semantic documents in different formats:
+
+```yml
+product:
+  semantics:
+    payloads:
+      default:
+        $ref: ./semantics/accounts.jsonld
+      orders:
+        $ref: ./semantics/orders.rdf
+      inventory:
+        $ref: ./semantics/inventory.json
+      transactions:
+        $ref: ./semantics/transactions.yaml
+```
+
+A standalone `$ref` points to the document; its format can be identified from its content or transport metadata. File extensions are common conventions, not a guaranteed format declaration. If the format or sources must be recorded in ODPS, reference an ODPS profile containing `format`, `spec` and the optional metadata.
+
+
 ## Data Access bindings
 
 A Data Access profile MAY refer to a named payload profile. Use one reference when the interface delivers a single payload; several access profiles may reference the same semantic profile.
