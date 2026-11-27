@@ -82,7 +82,7 @@ def check(path):
                 target_doc = document if target == base else load(target)
                 value = pointer(target_doc, unquote(parsed.fragment))
                 if allow_artifact and parsed.path and target.suffix.lower() in ('.yaml', '.yml', '.json'):
-                    is_profile = isinstance(value, dict) and (set(value) == {'$ref'} or {'format', 'spec'} <= set(value))
+                    is_profile = isinstance(value, dict) and (set(value) == {'$ref'} or ('format' in value and set(value) <= {'format', 'spec', 'version', 'description', 'sources'}))
                     if not is_profile:
                         unchecked.append(f'cannot determine whether {ref} is a semantic document or ODPS profile; content not checked')
                         return None, target, target_doc
@@ -133,7 +133,10 @@ def check(path):
         for source in value.get('sources', []):
             if source not in sources:
                 errors.append(f'{label}: unknown source {source}')
-        parse_content(value['spec'], value['format'], label)
+        if 'spec' in value:
+            parse_content(value['spec'], value['format'], label)
+        else:
+            unchecked.append(f'{label}: semantic content not provided')
     if 'productSemantics' in sem:
         document(sem['productSemantics'], sem_base, sem_doc, 'product semantics')
     for name, value in profiles.items():

@@ -60,7 +60,6 @@ class SemanticsTests(unittest.TestCase):
             {'payloads': {'other': {'format': 'text/turtle', 'spec': 'x'}}},
             {'payloads': {'default': {'format': 'text/turtle', 'spec': 'x', 'file': 'x'}}},
             {'payloads': {'default': {'format': 'text/turtle', 'file': 'x'}}},
-            {'payloads': {'default': {'format': 'text/turtle'}}},
             {'sources': {'a': {'name': 'A'}}},
             {'product': {'format': 'text/turtle', 'spec': 'x'}},
             {'payloads': {'default': {'$ref': 'x', 'format': 'text/turtle'}}},
@@ -77,6 +76,12 @@ class SemanticsTests(unittest.TestCase):
         errors, _ = self.check()
         for phrase in ('unknown source', 'cannot read semantic artifact', 'profile not found'):
             self.assertTrue(any(phrase in e for e in errors), errors)
+
+    def test_spec_is_optional_and_content_not_checked(self):
+        self.sem['productSemantics'].pop('spec')
+        errors, unchecked = self.check()
+        self.assertEqual(errors, [])
+        self.assertTrue(any('semantic content not provided' in x for x in unchecked))
 
     def test_turtle_and_unsupported_format(self):
         self.sem['productSemantics']['spec'] = 'this is not Turtle ;'

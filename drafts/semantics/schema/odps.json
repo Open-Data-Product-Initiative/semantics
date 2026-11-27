@@ -1454,8 +1454,7 @@
                 }
             },
             "required": [
-                "format",
-                "spec"
+                "format"
             ],
             "additionalProperties": false
         },

@@ -1121,7 +1121,6 @@ $defs:
       spec: *id001
     required:
     - format
-    - spec
     additionalProperties: false
   SemanticProfile:
     oneOf:

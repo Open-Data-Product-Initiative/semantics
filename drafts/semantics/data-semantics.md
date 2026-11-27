@@ -17,9 +17,6 @@ product:
   semantics:
     productSemantics:
       format: text/turtle
-      spec: |
-        @prefix ex: <https://example.org/> .
-        ex:Accounts a ex:DataProduct .
 ```
 
 | <div style="width:150px">Element name</div> | Type | Options | Description |
@@ -27,7 +24,6 @@ product:
 | **semantics** | object or reference object | OPTIONAL for a product | Top-level Data Semantics component. When included, provide an inline object or a reference to a complete semantics object. |
 | **productSemantics** | object or reference object | OPTIONAL; provide this, `payloads`, or both | Semantic description of the product as a whole. This example uses an inline document; a standalone `$ref` is also permitted. |
 | **format** | string | - | Identifies the semantic document format. One of:<ul><li><code>text/turtle</code></li><li><code>application/rdf+xml</code></li><li><code>application/ld+json</code></li><li><code>application/n-triples</code></li><li><code>application/trig</code></li><li><code>application/n-quads</code></li><li><code>application/json</code></li><li><code>application/yaml</code></li></ul> Media type names follow [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838.html). See the Semantic document formats table below for the format specifications. |
-| **spec** | string | REQUIRED in an inline document description | Complete semantic document as text. Minimum 1 character; no maximum length is specified. To reference external content, use a standalone `$ref` instead. |
 
 A product or payload description MAY instead be a standalone `$ref` to an external semantic document or a complete external profile. A reference object MUST contain only `$ref`; a referenced profile MUST meet the inline document requirements above.
 
@@ -56,7 +52,7 @@ product:
         $ref: ./semantics/transactions.ttl
 ```
 
-A product or payload description MAY be inline with `format` and `spec`, or use `$ref` to an external semantic document or profile. The optional `sources` list refers to names defined in the top-level `product.semantics.sources` object.
+A product or payload description MAY include `spec` alongside `format`, or use `$ref` to an external semantic document or profile. An inline description without `spec` provides metadata but no semantic content. The optional `sources` list refers to names defined in the top-level `product.semantics.sources` object.
 
 > Example of an external Data Semantics object:
 
@@ -119,6 +115,7 @@ The following fields apply to both `semantics.productSemantics` and each named `
 
 | Element name | Type | Options | Description |
 |---|---|---|---|
+| **spec** | string | OPTIONAL | Complete semantic document as text. Minimum 1 character; no maximum length is specified. To reference external content, use a standalone `$ref` instead. |
 | **version** | string | OPTIONAL | Version of this semantic document, distinct from the product, vocabulary and source-system versions. Minimum 1 character; no maximum length or versioning standard is specified. |
 | **description** | string | OPTIONAL | Human-readable summary of the document. Minimum 1 character; no maximum length is specified. |
 | **sources** | array of strings | OPTIONAL | At least one unique identifier defined in `product.semantics.sources`; each identifier has at least 1 character. No maximum list or identifier length is specified. |
