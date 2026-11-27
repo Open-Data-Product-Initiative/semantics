@@ -251,10 +251,7 @@
                 "semantics": {
                     "$ref": "#/$defs/Semantics"
                 }
-            },
-            "required": [
-                "semantics"
-            ]
+            }
         }
     },
     "required": [

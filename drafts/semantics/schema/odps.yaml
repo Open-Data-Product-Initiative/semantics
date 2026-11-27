@@ -202,8 +202,6 @@ properties:
         $ref: '#/$defs/ProductStrategy'
       semantics:
         $ref: '#/$defs/Semantics'
-    required:
-    - semantics
 required:
 - schema
 - version
