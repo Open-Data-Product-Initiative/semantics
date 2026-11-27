@@ -2,13 +2,13 @@
 
 > **Development version.** This proposed ODPS 4.3 component may change before release.
 
-The OPTIONAL `product.semantics` object describes the meaning of the data product and its payloads. It is a top-level product component alongside Data Access and Data SLA. Semantic descriptions can be included under `spec` or referenced as separate files with `$ref`. Named payload profiles let Data Access interfaces identify the description that applies to the data they deliver.
+The REQUIRED `product.semantics` object describes the meaning of the data product and its payloads. It is a top-level product component alongside Data Access and Data SLA. Semantic descriptions can be included under `spec` or referenced as separate files with `$ref`. Named payload profiles let Data Access interfaces identify the description that applies to the data they deliver.
 
-A semantics object MUST contain `productSemantics`, `payloads`, or both. `sources` MAY identify the systems used to create those descriptions. If `payloads` is present, it MUST include a profile named `default`. A product description can be used on its own, without payloads, Data Access or source systems.
+A semantics object MUST contain `productSemantics`, `payloads`, or both. An ODPS 4.2 product without semantics must add it to conform to ODPS 4.3. `sources` MAY identify the systems used to create those descriptions. If `payloads` is present, it MUST include a profile named `default`. A product description can be used on its own, without payloads, Data Access or source systems.
 
 ## Mandatory attributes and elements
 
-Data Semantics is OPTIONAL for a product. The requirements below apply only when the relevant object is provided. A semantics object MUST contain a product description, payload profiles, or both.
+Every ODPS 4.3 product MUST include Data Semantics. The `semantics` object MUST contain a product description, payload profiles, or both. Other requirements below apply when the relevant object is provided.
 
 > Example of the required fields in an inline payload profile:
 
@@ -25,6 +25,7 @@ product:
 
 | <div style="width:150px">Element name</div> | Type | Options | Description |
 |---|---|---|---|
+| **semantics** | object or reference object | REQUIRED | Top-level product component describing product or payload semantics. Provide an inline object or a reference to a complete semantics object. |
 | **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
 | **format** | string | REQUIRED in a document description | Format of the semantic document. MUST be one of the media types in the Semantic document formats table below: `text/turtle`, `application/rdf+xml`, `application/ld+json`, `application/n-triples`, `application/trig`, `application/n-quads`, `application/json` or `application/yaml`. See [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838.html). |
 | **spec** | string | REQUIRED in an inline document description | Complete semantic document as text. Minimum 1 character; no maximum length is specified. To reference external content, use a standalone `$ref` instead. |
@@ -96,7 +97,6 @@ This profile's `$ref` identifies an external ODPS profile containing the inline 
 
 | Element name | Type | Options | Description |
 |---|---|---|---|
-| **semantics** | object or reference object | OPTIONAL | Top-level product component. Contains `productSemantics`, `payloads`, or both, and optionally `sources`; alternatively, `$ref` identifies an external complete semantics object. |
 | **sources** | object | OPTIONAL | Named source systems shared by the descriptions. Each key is a source identifier, such as `enterpriseGlossary`. The object MUST contain at least one entry when present; no maximum number or key length is specified. |
 | **productSemantics** | object or reference object | OPTIONAL | Semantic document describing the product as a whole. Uses the document fields or `$ref` to a complete description. Include `productSemantics`, `payloads`, or both. |
 | **payloads** | object | OPTIONAL | Named payload semantic profiles. No maximum number or profile-name length is specified. Include `productSemantics`, `payloads`, or both. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields or a reference to an external semantic document or profile. |

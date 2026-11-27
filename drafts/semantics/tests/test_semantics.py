@@ -41,8 +41,10 @@ class SemanticsTests(unittest.TestCase):
     def test_schema_representations_match(self):
         self.assertEqual(json.loads((HERE / 'schema/odps.json').read_text()), yaml.safe_load((HERE / 'schema/odps.yaml').read_text()))
 
-    def test_42_product_without_semantics_valid(self):
+    def test_42_document_requires_semantics_for_43(self):
         base = yaml.safe_load((HERE.parents[1] / 'tests/fixtures/schema-conformance/valid-contract-access-target.yml').read_text())
+        self.assertTrue(list(Draft202012Validator(validator.SCHEMA).iter_errors(base)))
+        base['product']['semantics'] = {'productSemantics': {'format': 'text/turtle', 'spec': '@prefix ex: <https://example.org/> .'}}
         self.assertEqual(list(Draft202012Validator(validator.SCHEMA).iter_errors(base)), [])
         self.product = base
         self.assertEqual(self.check()[0], [])
@@ -129,7 +131,7 @@ class SemanticsTests(unittest.TestCase):
 
     def test_no_semantics_with_binding_fails(self):
         self.product['product'].pop('semantics')
-        self.assertTrue(any('requires product.semantics' in e for e in self.check()[0]))
+        self.assertTrue(any('semantics' in e and 'required' in e for e in self.check()[0]))
 
 
 if __name__ == '__main__':
