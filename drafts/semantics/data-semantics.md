@@ -28,9 +28,6 @@ product:
 | **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
 | **format** | string | REQUIRED in a document description | Format of the semantic document. Nonempty; no maximum length is specified. Use a media type such as `text/turtle` or `application/ld+json` where practical; see [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838.html). The schema accepts other format identifiers. |
 | **spec** | string | REQUIRED in an inline document description | Complete semantic document as text. Minimum 1 character; no maximum length is specified. To reference external content, use a standalone `$ref` instead. |
-| **name** | string | REQUIRED for each source system | Human-readable source system name, when `sources` is provided. Minimum 1 character; no maximum length is specified. |
-| **operationId** | string | REQUIRED in each access binding | Identifier of an operation in the interface's API specification. Minimum 1 character; no maximum length is specified. |
-| **semantics** | reference object | REQUIRED in each access binding | Reference to one named semantic payload profile. |
 
 A product or payload description MAY instead be a standalone `$ref` to an external semantic document or a complete external profile. A reference object MUST contain only `$ref`; a referenced profile MUST meet the inline document requirements above.
 
@@ -111,6 +108,7 @@ A source describes a system used to create or support a semantic description. It
 
 | Element name | Type | Options | Description |
 |---|---|---|---|
+| **name** | string | REQUIRED for each source system | Human-readable source system name, when `sources` is provided. Minimum 1 character; no maximum length is specified. |
 | **type** | string | OPTIONAL | Extensible description of the system type, such as `vocabulary-service` or `semantic-repository`. Minimum 1 character; no maximum length is specified. |
 | **url** | URI-reference | OPTIONAL | Location of a human-readable service or repository. URI-reference per [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html); minimum 1 character, no maximum length specified. |
 | **apiURL** | URI-reference | OPTIONAL | Machine-readable service endpoint. URI-reference per [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html); minimum 1 character, no maximum length specified. |
@@ -169,8 +167,10 @@ product:
 |---|---|---|---|
 | **semantics** | reference object or object | OPTIONAL | On a Data Access profile, either a single reference to a named payload profile or an object containing `bindings`. |
 | **bindings** | array | REQUIRED for multiple selectors | List of at least one operation-to-payload binding; no maximum number is specified. Each entry contains `operationId` and `semantics` and may include `status` and `mediaType`. |
+| **operationId** | string | REQUIRED in each access binding | Identifier of an operation in the interface's API specification. Minimum 1 character; no maximum length is specified. |
 | **status** | string | OPTIONAL | Three-digit HTTP status in the range `100`–`599`, or `default` for the response named `default` in the API specification. HTTP status codes are defined by [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html#section-15). |
 | **mediaType** | string | OPTIONAL | Media type of the response representation, such as `application/json`; see [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html#section-8.3). Minimum 1 character; no maximum length is specified. The schema does not validate media-type syntax. |
+| **semantics** (binding) | reference object | REQUIRED in each access binding | Reference to one named semantic payload profile. |
 
 An omitted `status` or `mediaType` selects all values of that dimension. Bindings for the same operation MUST NOT overlap: for example, a binding without `status` overlaps one for `'200'`. A profile that applies to several responses must describe each covered payload. Unlisted operations and responses make no semantic claim. Escape `~` as `~0` and `/` as `~1` in profile names used in JSON Pointer references.
 
