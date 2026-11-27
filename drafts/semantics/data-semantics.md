@@ -26,16 +26,12 @@ product:
         ex:Accounts a ex:DataProduct .
     payloads:
       default:
-        format: text/turtle
-        version: '1.0'
-        sources: [enterpriseGlossary]
-        file: ./semantics/account.ttl
+        $ref: ./semantics/account-profile.yaml
       transactions:
-        format: text/turtle
-        file: ./semantics/transactions.ttl
+        $ref: ./semantics/transaction-profile.yaml
 ```
 
-The `product` and each payload profile contain a semantic document description. A description MUST include `format` and exactly one of `spec` or `file`. The optional `sources` list refers to names defined in the top-level `product.semantics.sources` object.
+The `product` and each payload profile contain a semantic document description, either inline or in a referenced profile file. A description MUST include `format` and exactly one of `spec` or `file`. The optional `sources` list refers to names defined in the top-level `product.semantics.sources` object.
 
 > Example of an external Data Semantics object:
 
@@ -52,6 +48,9 @@ The external file contains the complete `sources`, `product` and/or `payloads` o
 ```yml
 product:
   semantics:
+    sources:
+      enterpriseGlossary:
+        name: Enterprise glossary
     payloads:
       default:
         $ref: ./semantics/account-profile.yaml
@@ -61,6 +60,8 @@ product:
 
 ```yml
 format: text/turtle
+version: '1.0'
+sources: [enterpriseGlossary]
 file: ./account.ttl
 ```
 
