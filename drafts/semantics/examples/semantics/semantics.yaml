@@ -1,0 +1,17 @@
+sources:
+  glossary:
+    name: Enterprise glossary
+    type: vocabulary-service
+    url: https://example.org/glossary
+product:
+  format: text/turtle
+  sources: [glossary]
+  spec: |
+    @prefix ex: <https://example.org/> .
+    ex:Accounts a ex:DataProduct .
+payloads:
+  default:
+    $ref: ./account-profile.yaml
+  transactions:
+    format: text/turtle
+    file: ./transactions.ttl

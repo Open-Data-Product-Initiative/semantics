@@ -1,0 +1,109 @@
+import copy
+import importlib.util
+import json
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
+
+import yaml
+from jsonschema import Draft202012Validator
+
+HERE = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location('semantics_validate', HERE / 'validate.py')
+validator = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(validator)
+
+
+class SemanticsTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        shutil.copytree(HERE / 'examples', self.root / 'examples')
+        self.path = self.root / 'examples/product.yaml'
+        self.product = yaml.safe_load(self.path.read_text())
+        self.sem_path = self.root / 'examples/semantics/semantics.yaml'
+        self.sem = yaml.safe_load(self.sem_path.read_text())
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def check(self):
+        self.path.write_text(yaml.safe_dump(self.product, sort_keys=False))
+        self.sem_path.write_text(yaml.safe_dump(self.sem, sort_keys=False))
+        return validator.check(self.path)
+
+    def test_example_resolves_external_semantics_and_profile(self):
+        errors, unchecked = self.check()
+        self.assertEqual(errors, [])
+        self.assertTrue(any('operation selectors not checked' in x for x in unchecked))
+
+    def test_schema_representations_match(self):
+        self.assertEqual(json.loads((HERE / 'schema/odps.json').read_text()), yaml.safe_load((HERE / 'schema/odps.yaml').read_text()))
+
+    def test_42_product_without_semantics_valid(self):
+        base = yaml.safe_load((HERE.parents[1] / 'tests/fixtures/schema-conformance/valid-contract-access-target.yml').read_text())
+        self.assertEqual(list(Draft202012Validator(validator.SCHEMA).iter_errors(base)), [])
+        self.product = base
+        self.assertEqual(self.check()[0], [])
+
+    def test_product_only_and_single_binding(self):
+        self.product['product'].pop('dataAccess')
+        self.sem.pop('payloads')
+        self.assertEqual(self.check()[0], [])
+        self.sem['payloads'] = {'default': {'format': 'text/turtle', 'spec': '@prefix ex: <https://example.org/> .'}}
+        self.product['product']['dataAccess'] = {'default': {'outputPortType': 'API', 'semantics': {'$ref': '#/product/semantics/payloads/default'}}}
+        self.assertEqual(self.check()[0], [])
+
+    def test_invalid_shapes(self):
+        cases = [
+            {'payloads': {'other': {'format': 'text/turtle', 'spec': 'x'}}},
+            {'payloads': {'default': {'format': 'text/turtle', 'spec': 'x', 'file': 'x'}}},
+            {'payloads': {'default': {'format': 'text/turtle'}}},
+            {'sources': {'a': {'name': 'A'}}},
+            {'payloads': {'default': {'$ref': 'x', 'format': 'text/turtle'}}},
+        ]
+        for sem in cases:
+            with self.subTest(sem=sem):
+                self.sem = sem
+                self.assertTrue(self.check()[0])
+
+    def test_unknown_source_missing_artifact_and_target(self):
+        self.sem['payloads']['transactions']['sources'] = ['unknown']
+        self.sem['payloads']['transactions']['file'] = 'missing.ttl'
+        self.product['product']['dataAccess']['default']['semantics']['bindings'][0]['semantics']['$ref'] = '#/product/semantics/payloads/missing'
+        errors, _ = self.check()
+        for phrase in ('unknown source', 'missing local artifact', 'profile not found'):
+            self.assertTrue(any(phrase in e for e in errors), errors)
+
+    def test_turtle_and_unsupported_format(self):
+        self.sem['product']['spec'] = 'this is not Turtle ;'
+        self.assertTrue(any('invalid Turtle' in e for e in self.check()[0]))
+        self.sem['product']['format'] = 'application/example'
+        errors, unchecked = self.check()
+        self.assertEqual(errors, [])
+        self.assertTrue(any('content parsing not performed' in x for x in unchecked))
+
+    def test_cycle_and_unresolved_remote(self):
+        profile = self.root / 'examples/semantics/account-profile.yaml'
+        profile.write_text('$ref: ./account-profile.yaml\n')
+        self.assertTrue(any('cycle' in e for e in self.check()[0]))
+        self.sem['payloads']['default'] = {'$ref': 'https://example.org/profile.yaml'}
+        errors, unchecked = self.check()
+        self.assertEqual(errors, [])
+        self.assertTrue(any('remote reference' in x for x in unchecked))
+
+    def test_overlapping_operation_selectors_rejected(self):
+        bindings = self.product['product']['dataAccess']['default']['semantics']['bindings']
+        duplicate = copy.deepcopy(bindings[0])
+        duplicate.pop('status')
+        bindings.append(duplicate)
+        self.assertTrue(any('overlapping' in e for e in self.check()[0]))
+
+    def test_no_semantics_with_binding_fails(self):
+        self.product['product'].pop('semantics')
+        self.assertTrue(any('requires product.semantics' in e for e in self.check()[0]))
+
+
+if __name__ == '__main__':
+    unittest.main()

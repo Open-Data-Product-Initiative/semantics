@@ -1,0 +1,22 @@
+schema: https://example.org/odps/4.3/schema/odps.yaml
+version: "4.3"
+product:
+  semantics:
+    $ref: ./semantics/semantics.yaml
+  dataAccess:
+    default:
+      outputPortType: API
+      format: JSON
+      specsURL: https://example.org/openapi.yaml
+      semantics:
+        bindings:
+          - operationId: getAccount
+            status: '200'
+            mediaType: application/json
+            semantics:
+              $ref: '#/product/semantics/payloads/default'
+          - operationId: listTransactions
+            status: '200'
+            mediaType: application/json
+            semantics:
+              $ref: '#/product/semantics/payloads/transactions'
