@@ -25,7 +25,6 @@ product:
 
 | <div style="width:150px">Element name</div> | Type | Options | Description |
 |---|---|---|---|
-| **product or payloads** | object or reference object | At least one REQUIRED | A semantics object MUST contain a product description, payload profiles, or both. A standalone `$ref` MAY replace the whole semantics object. |
 | **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
 | **format** | string | REQUIRED in a document description | Format of the semantic document, preferably a media type such as `text/turtle` or `application/ld+json`. |
 | **spec** | string | REQUIRED in an inline document description | Complete semantic document as text. To reference external content, use a standalone `$ref` instead. |
@@ -102,8 +101,8 @@ This profile's `$ref` identifies an external ODPS profile containing the inline 
 |---|---|---|---|
 | **semantics** | object or reference object | OPTIONAL | Top-level product component. Contains `product`, `payloads`, or both, and optionally `sources`; alternatively, `$ref` identifies an external complete semantics object. |
 | **sources** | object | OPTIONAL | Named source systems shared by the descriptions. Each key is a source identifier, such as `enterpriseGlossary`. The object MUST contain at least one entry when present. |
-| **product** | object or reference object | OPTIONAL | Semantic document describing the product as a whole. Uses the document fields or `$ref` to a complete description. |
-| **payloads** | object | OPTIONAL | Named payload semantic profiles. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields or a reference to an external semantic document or profile. |
+| **product** | object or reference object | OPTIONAL | Semantic document describing the product as a whole. Uses the document fields or `$ref` to a complete description. Include `product`, `payloads`, or both. |
+| **payloads** | object | OPTIONAL | Named payload semantic profiles. Include `product`, `payloads`, or both. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields or a reference to an external semantic document or profile. |
 | **$ref** | URI-reference | REQUIRED in a reference object | References an external semantics object, semantic document or complete product or payload profile. A reference object has no sibling fields. |
 
 ### Semantic source fields
