@@ -18,8 +18,7 @@ index.write_text(text, encoding='utf-8')
 layout = SOURCE / 'layouts/layout.erb'
 text = layout.read_text(encoding='utf-8').replace('Open Data Product Specification 4.2', 'Open Data Product Specification 4.3 Development version').replace('ODPS 4.2 is the final specification for interoperable, machine-readable data product metadata.', 'ODPS 4.3 development version; not a released standard.').replace('https://opendataproducts.org/v4.2"', 'https://opendataproducts.org/semantics/"')
 layout.write_text(text, encoding='utf-8')
-semantics = (DRAFT / 'README.md').read_text(encoding='utf-8')
-semantics = semantics.replace('# ODPS 4.3 semantics specification — Development version', '# Data Semantics').replace('(examples/product.yaml)', '(semantics-examples/product.yaml)')
+semantics = (DRAFT / 'data-semantics.md').read_text(encoding='utf-8')
 (SOURCE / 'includes/_semantics.md').write_text(semantics, encoding='utf-8')
 for name in ('odps.json', 'odps.yaml'):
     shutil.copyfile(DRAFT / 'schema' / name, SOURCE / 'schema' / name)
