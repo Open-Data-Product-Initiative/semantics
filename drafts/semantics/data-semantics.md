@@ -26,10 +26,10 @@ product:
 | <div style="width:150px">Element name</div> | Type | Options | Description |
 |---|---|---|---|
 | **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
-| **format** | string | REQUIRED in a document description | Format of the semantic document, preferably a media type such as `text/turtle` or `application/ld+json`. |
-| **spec** | string | REQUIRED in an inline document description | Complete semantic document as text. To reference external content, use a standalone `$ref` instead. |
-| **name** | string | REQUIRED for each source system | Human-readable source system name, when `sources` is provided. |
-| **operationId** | string | REQUIRED in each access binding | Identifier of an operation in the interface's API specification. |
+| **format** | string | REQUIRED in a document description | Format of the semantic document. Nonempty; no maximum length is specified. Use a media type such as `text/turtle` or `application/ld+json` where practical; see [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838.html). The schema accepts other format identifiers. |
+| **spec** | string | REQUIRED in an inline document description | Complete semantic document as text. Minimum 1 character; no maximum length is specified. To reference external content, use a standalone `$ref` instead. |
+| **name** | string | REQUIRED for each source system | Human-readable source system name, when `sources` is provided. Minimum 1 character; no maximum length is specified. |
+| **operationId** | string | REQUIRED in each access binding | Identifier of an operation in the interface's API specification. Minimum 1 character; no maximum length is specified. |
 | **semantics** | reference object | REQUIRED in each access binding | Reference to one named semantic payload profile. |
 
 A product or payload description MAY instead be a standalone `$ref` to an external semantic document or a complete external profile. A reference object MUST contain only `$ref`; a referenced profile MUST meet the inline document requirements above.
@@ -100,10 +100,10 @@ This profile's `$ref` identifies an external ODPS profile containing the inline 
 | Element name | Type | Options | Description |
 |---|---|---|---|
 | **semantics** | object or reference object | OPTIONAL | Top-level product component. Contains `product`, `payloads`, or both, and optionally `sources`; alternatively, `$ref` identifies an external complete semantics object. |
-| **sources** | object | OPTIONAL | Named source systems shared by the descriptions. Each key is a source identifier, such as `enterpriseGlossary`. The object MUST contain at least one entry when present. |
+| **sources** | object | OPTIONAL | Named source systems shared by the descriptions. Each key is a source identifier, such as `enterpriseGlossary`. The object MUST contain at least one entry when present; no maximum number or key length is specified. |
 | **product** | object or reference object | OPTIONAL | Semantic document describing the product as a whole. Uses the document fields or `$ref` to a complete description. Include `product`, `payloads`, or both. |
-| **payloads** | object | OPTIONAL | Named payload semantic profiles. Include `product`, `payloads`, or both. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields or a reference to an external semantic document or profile. |
-| **$ref** | URI-reference | REQUIRED in a reference object | References an external semantics object, semantic document or complete product or payload profile. A reference object has no sibling fields. |
+| **payloads** | object | OPTIONAL | Named payload semantic profiles. No maximum number or profile-name length is specified. Include `product`, `payloads`, or both. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields or a reference to an external semantic document or profile. |
+| **$ref** | URI-reference | REQUIRED in a reference object | References an external semantics object, semantic document or complete product or payload profile. A reference object has no sibling fields. Minimum 1 character; no maximum length is specified. URI references follow [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html); internal JSON Pointer fragments follow [RFC 6901](https://www.rfc-editor.org/rfc/rfc6901.html). |
 
 ### Semantic source fields
 
@@ -111,10 +111,10 @@ A source describes a system used to create or support a semantic description. It
 
 | Element name | Type | Options | Description |
 |---|---|---|---|
-| **type** | string | OPTIONAL | Extensible description of the system type, such as `vocabulary-service` or `semantic-repository`. |
-| **url** | URI-reference | OPTIONAL | Location of a human-readable service or repository. |
-| **apiURL** | URI-reference | OPTIONAL | Machine-readable service endpoint. |
-| **description** | string | OPTIONAL | Explanation of the source system's role. |
+| **type** | string | OPTIONAL | Extensible description of the system type, such as `vocabulary-service` or `semantic-repository`. Minimum 1 character; no maximum length is specified. |
+| **url** | URI-reference | OPTIONAL | Location of a human-readable service or repository. URI-reference per [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html); minimum 1 character, no maximum length specified. |
+| **apiURL** | URI-reference | OPTIONAL | Machine-readable service endpoint. URI-reference per [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html); minimum 1 character, no maximum length specified. |
+| **description** | string | OPTIONAL | Explanation of the source system's role. Minimum 1 character; no maximum length is specified. |
 
 ### Semantic document fields
 
@@ -122,9 +122,9 @@ The following fields apply to both `semantics.product` and each named `semantics
 
 | Element name | Type | Options | Description |
 |---|---|---|---|
-| **version** | string | OPTIONAL | Version of this semantic document, distinct from the product, vocabulary and source-system versions. |
-| **description** | string | OPTIONAL | Human-readable summary of the document. |
-| **sources** | array of strings | OPTIONAL | Nonempty list of unique source identifiers defined in `product.semantics.sources`. |
+| **version** | string | OPTIONAL | Version of this semantic document, distinct from the product, vocabulary and source-system versions. Minimum 1 character; no maximum length or versioning standard is specified. |
+| **description** | string | OPTIONAL | Human-readable summary of the document. Minimum 1 character; no maximum length is specified. |
+| **sources** | array of strings | OPTIONAL | At least one unique identifier defined in `product.semantics.sources`; each identifier has at least 1 character. No maximum list or identifier length is specified. |
 
 ## Data Access bindings
 
@@ -168,9 +168,9 @@ product:
 | Element name | Type | Options | Description |
 |---|---|---|---|
 | **semantics** | reference object or object | OPTIONAL | On a Data Access profile, either a single reference to a named payload profile or an object containing `bindings`. |
-| **bindings** | array | REQUIRED for multiple selectors | Nonempty list of operation-to-payload bindings. Each entry contains `operationId` and `semantics` and may include `status` and `mediaType`. |
-| **status** | string | OPTIONAL | Three-digit HTTP response status such as `'200'`, or `default` for the response named `default` in the API specification. |
-| **mediaType** | string | OPTIONAL | Media type of the response representation, such as `application/json`. |
+| **bindings** | array | REQUIRED for multiple selectors | List of at least one operation-to-payload binding; no maximum number is specified. Each entry contains `operationId` and `semantics` and may include `status` and `mediaType`. |
+| **status** | string | OPTIONAL | Three-digit HTTP status in the range `100`–`599`, or `default` for the response named `default` in the API specification. HTTP status codes are defined by [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html#section-15). |
+| **mediaType** | string | OPTIONAL | Media type of the response representation, such as `application/json`; see [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html#section-8.3). Minimum 1 character; no maximum length is specified. The schema does not validate media-type syntax. |
 
 An omitted `status` or `mediaType` selects all values of that dimension. Bindings for the same operation MUST NOT overlap: for example, a binding without `status` overlaps one for `'200'`. A profile that applies to several responses must describe each covered payload. Unlisted operations and responses make no semantic claim. Escape `~` as `~0` and `/` as `~1` in profile names used in JSON Pointer references.
 
