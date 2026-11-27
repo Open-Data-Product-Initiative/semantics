@@ -26,7 +26,7 @@ product:
 | <div style="width:150px">Element name</div> | Type | Options | Description |
 |---|---|---|---|
 | **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
-| **format** | string | REQUIRED in a document description | Format of the semantic document. Nonempty; no maximum length is specified. Use a media type such as `text/turtle` or `application/ld+json` where practical; see [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838.html). The schema accepts other format identifiers. |
+| **format** | string | REQUIRED in a document description | Format of the semantic document. Nonempty; no maximum length is specified. Use a media type such as `text/turtle`, `application/rdf+xml`, `application/ld+json`, `application/json` or `application/yaml` where practical; see [RFC 6838](https://www.rfc-editor.org/rfc/rfc6838.html). The schema accepts other format identifiers. |
 | **spec** | string | REQUIRED in an inline document description | Complete semantic document as text. Minimum 1 character; no maximum length is specified. To reference external content, use a standalone `$ref` instead. |
 
 A product or payload description MAY instead be a standalone `$ref` to an external semantic document or a complete external profile. A reference object MUST contain only `$ref`; a referenced profile MUST meet the inline document requirements above.
@@ -123,6 +123,41 @@ The following fields apply to both `semantics.productSemantics` and each named `
 | **version** | string | OPTIONAL | Version of this semantic document, distinct from the product, vocabulary and source-system versions. Minimum 1 character; no maximum length or versioning standard is specified. |
 | **description** | string | OPTIONAL | Human-readable summary of the document. Minimum 1 character; no maximum length is specified. |
 | **sources** | array of strings | OPTIONAL | At least one unique identifier defined in `product.semantics.sources`; each identifier has at least 1 character. No maximum list or identifier length is specified. |
+
+### Semantic document formats
+
+The `format` field identifies the serialization of an inline semantic document. It is an open string, not a closed list. Media types are recommended where available; the following are examples, not mandatory formats or a claim that every validator supports them.
+
+| Format | Media type | Typical file extension | Description |
+|---|---|---|---|
+| [Turtle](https://www.w3.org/TR/turtle/) | `text/turtle` | `.ttl` | Human-readable RDF graph serialization. |
+| [RDF/XML](https://www.w3.org/TR/rdf-syntax-grammar/) | `application/rdf+xml` | `.rdf`, `.owl` | XML serialization of an RDF graph. |
+| [JSON-LD](https://www.w3.org/TR/json-ld11/) | `application/ld+json` | `.jsonld` | JSON-based linked-data format that can represent RDF. |
+| [N-Triples](https://www.w3.org/TR/n-triples/) | `application/n-triples` | `.nt` | Line-oriented RDF graph serialization. |
+| [TriG](https://www.w3.org/TR/trig/) | `application/trig` | `.trig` | Turtle-based RDF dataset serialization, including named graphs. |
+| [N-Quads](https://www.w3.org/TR/n-quads/) | `application/n-quads` | `.nq` | Line-oriented RDF dataset serialization. |
+| [JSON](https://www.rfc-editor.org/rfc/rfc8259.html) | `application/json` | `.json` | General-purpose JSON; the semantic document's own model defines its meaning. |
+| [YAML](https://www.rfc-editor.org/rfc/rfc9512.html) | `application/yaml` | `.yaml`, `.yml` | General-purpose YAML; the semantic document's own model defines its meaning. |
+
+RDF is a data model; Turtle, RDF/XML and other RDF formats are different ways to serialize it. JSON and YAML alone do not define semantic relationships. A source vocabulary, documented model or other semantic specification is needed to interpret their content. `spec` remains a string: inline JSON and YAML are written as text within the string, not as nested YAML or JSON objects.
+
+> Examples of references to semantic documents in different formats:
+
+```yml
+product:
+  semantics:
+    payloads:
+      default:
+        $ref: ./semantics/accounts.jsonld
+      orders:
+        $ref: ./semantics/orders.rdf
+      inventory:
+        $ref: ./semantics/inventory.json
+      transactions:
+        $ref: ./semantics/transactions.yaml
+```
+
+A standalone `$ref` points to the document; its format can be identified from its content or transport metadata. File extensions are common conventions, not a guaranteed format declaration. If the format or sources must be recorded in ODPS, reference an ODPS profile containing `format`, `spec` and the optional metadata.
 
 ## Data Access bindings
 

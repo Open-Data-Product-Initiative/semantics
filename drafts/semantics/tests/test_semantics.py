@@ -91,6 +91,16 @@ class SemanticsTests(unittest.TestCase):
         (self.root / 'examples/semantics/transactions.ttl').write_text('invalid turtle ;')
         self.assertTrue(any('invalid Turtle' in e for e in self.check()[0]))
 
+    def test_json_and_yaml_artifact_references_report_not_checked(self):
+        for extension, content in [('json', '{"concept": "Account"}'), ('yaml', 'concept: Account\n')]:
+            with self.subTest(extension=extension):
+                artifact = self.root / 'examples/semantics' / ('meaning.' + extension)
+                artifact.write_text(content)
+                self.sem['payloads']['transactions'] = {'$ref': './' + artifact.name}
+                errors, unchecked = self.check()
+                self.assertEqual(errors, [])
+                self.assertTrue(any('content not checked' in x for x in unchecked))
+
     def test_cycle_and_unresolved_remote(self):
         profile = self.root / 'examples/semantics/account-profile.yaml'
         profile.write_text('$ref: ./account-profile.yaml\n')

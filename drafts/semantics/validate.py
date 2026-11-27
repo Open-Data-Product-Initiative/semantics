@@ -81,6 +81,11 @@ def check(path):
             try:
                 target_doc = document if target == base else load(target)
                 value = pointer(target_doc, unquote(parsed.fragment))
+                if allow_artifact and parsed.path and target.suffix.lower() in ('.yaml', '.yml', '.json'):
+                    is_profile = isinstance(value, dict) and (set(value) == {'$ref'} or {'format', 'spec'} <= set(value))
+                    if not is_profile:
+                        unchecked.append(f'cannot determine whether {ref} is a semantic document or ODPS profile; content not checked')
+                        return None, target, target_doc
             except (OSError, ValueError, KeyError, IndexError, TypeError, yaml.YAMLError) as exc:
                 errors.append(f'cannot resolve {ref}: {exc}')
                 return None, base, document
