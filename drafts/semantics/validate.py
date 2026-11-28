@@ -82,7 +82,7 @@ def check(path):
                 target_doc = document if target == base else load(target)
                 value = pointer(target_doc, unquote(parsed.fragment))
                 if allow_artifact and parsed.path and target.suffix.lower() in ('.yaml', '.yml', '.json'):
-                    is_profile = isinstance(value, dict) and (set(value) == {'$ref'} or ('format' in value and set(value) <= {'format', 'spec', 'version', 'description', 'sources'}))
+                    is_profile = isinstance(value, dict) and (set(value) == {'$ref'} or ('format' in value and set(value) <= {'format', 'spec', 'version', 'description', 'sources'}) or ('artifact' in value and set(value) <= {'artifact', 'artifactVersion', 'assessment'}))
                     if not is_profile:
                         unchecked.append(f'cannot determine whether {ref} is a semantic document or ODPS profile; content not checked')
                         return None, target, target_doc
@@ -119,12 +119,22 @@ def check(path):
         except Exception as exc:
             errors.append(f"{label}: invalid Turtle: {exc}")
 
-    def document(value, base, container, label):
+    def document(value, base, container, label, payload=False):
         value, base, container = resolve(value, base, container, allow_artifact=True)
         if value is None:
             return
         if isinstance(value, tuple) and value[0] == 'semantic-artifact':
             parse_content(value[1], value[2] or 'unknown', label)
+            return
+        if payload and isinstance(value, dict) and 'artifact' in value:
+            previous_errors = len(errors)
+            shape(value, 'PayloadSemanticProfile')
+            if len(errors) == previous_errors:
+                artifact = value['artifact']
+                if (isinstance(artifact, dict) and 'version' in artifact
+                        and 'artifactVersion' in value and artifact['version'] != value['artifactVersion']):
+                    errors.append(f'{label}: artifactVersion does not match inline artifact version')
+                document(value['artifact'], base, container, label)
             return
         previous_errors = len(errors)
         shape(value, 'SemanticDocument')
@@ -140,7 +150,7 @@ def check(path):
     if 'productSemantics' in sem:
         document(sem['productSemantics'], sem_base, sem_doc, 'product semantics')
     for name, value in profiles.items():
-        document(value, sem_base, sem_doc, f'payload {name}')
+        document(value, sem_base, sem_doc, f'payload {name}', payload=True)
     access = product.get('dataAccess', {})
     if '$ref' in access:
         unchecked.append('external dataAccess package bindings not checked')

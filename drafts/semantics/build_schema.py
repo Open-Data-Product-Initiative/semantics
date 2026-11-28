@@ -17,12 +17,15 @@ reference = closed({'$ref': uri}, ['$ref'])
 semantic_formats = ['text/turtle', 'application/rdf+xml', 'application/ld+json', 'application/n-triples', 'application/trig', 'application/n-quads', 'application/json', 'application/yaml']
 doc = closed({'format': {'type': 'string', 'enum': semantic_formats}, 'version': string, 'description': string, 'sources': {'type': 'array', 'items': string, 'minItems': 1, 'uniqueItems': True}, 'spec': string}, ['format'])
 source = closed({'name': string, 'type': string, 'url': uri, 'apiURL': uri, 'description': string}, ['name'])
-profiles = {'type': 'object', 'properties': {'default': ref('SemanticProfile')}, 'required': ['default'], 'additionalProperties': ref('SemanticProfile'), 'minProperties': 1}
+score = {'type': 'integer', 'minimum': 0, 'maximum': 100}
+assessment = closed({**{name: score for name in ('overallScore', 'coverage', 'mappingConfidence', 'semanticCompleteness', 'consistency', 'traceability')}, 'structuralValidity': {'type': 'string', 'enum': ['valid', 'invalid', 'notEvaluated']}, 'summary': string, 'method': uri, 'assessedAt': {'type': 'string', 'format': 'date-time'}, 'report': ref('SemanticReference')})
+payload_wrapper = closed({'artifact': ref('SemanticProfile'), 'artifactVersion': string, 'assessment': ref('SemanticAssessment')}, ['artifact'])
+profiles = {'type': 'object', 'properties': {'default': ref('PayloadSemanticProfile')}, 'required': ['default'], 'additionalProperties': ref('PayloadSemanticProfile'), 'minProperties': 1}
 semantics = closed({'sources': {'type': 'object', 'minProperties': 1, 'additionalProperties': source}, 'productSemantics': ref('SemanticProfile'), 'payloads': profiles})
 semantics['anyOf'] = [{'required': ['productSemantics']}, {'required': ['payloads']}]
 binding = closed({'operationId': string, 'status': {'type': 'string', 'pattern': '^(?:[1-5][0-9][0-9]|default)$'}, 'mediaType': string, 'semantics': ref('SemanticAccessReference')}, ['operationId', 'semantics'])
 bindings = closed({'bindings': {'type': 'array', 'minItems': 1, 'items': binding}}, ['bindings'])
-base['$defs'].update({'SemanticReference': reference, 'SemanticDocument': doc, 'SemanticProfile': {'oneOf': [ref('SemanticDocument'), ref('SemanticReference')]}, 'SemanticObject': semantics, 'Semantics': {'oneOf': [ref('SemanticObject'), ref('SemanticReference')]}, 'SemanticAccessReference': reference, 'SemanticAccessBinding': {'oneOf': [ref('SemanticAccessReference'), bindings]}})
+base['$defs'].update({'SemanticReference': reference, 'SemanticDocument': doc, 'SemanticProfile': {'oneOf': [ref('SemanticDocument'), ref('SemanticReference')]}, 'SemanticAssessment': assessment, 'PayloadSemanticProfile': {'oneOf': [ref('SemanticProfile'), payload_wrapper]}, 'SemanticObject': semantics, 'Semantics': {'oneOf': [ref('SemanticObject'), ref('SemanticReference')]}, 'SemanticAccessReference': reference, 'SemanticAccessBinding': {'oneOf': [ref('SemanticAccessReference'), bindings]}})
 base['properties']['version']['examples'] = ['4.3']
 base['properties']['product']['properties']['semantics'] = ref('Semantics')
 base['$defs']['DataAccessItem']['properties']['semantics'] = ref('SemanticAccessBinding')

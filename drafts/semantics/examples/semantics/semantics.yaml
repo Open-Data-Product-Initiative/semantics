@@ -14,3 +14,23 @@ payloads:
     $ref: ./account-profile.yaml
   transactions:
     $ref: ./transactions.ttl
+  weather-observation:
+    artifact:
+      $ref: https://example.org/semantics/weather-observation.ttl
+    artifactVersion: '1.0'
+    assessment:
+      overallScore: 76
+      coverage: 90
+      mappingConfidence: 78
+      semanticCompleteness: 65
+      consistency: 85
+      structuralValidity: valid
+      traceability: 80
+      summary: >-
+        Two observed fields have no vocabulary mapping. Four mappings are
+        uncertain. The unit for air_temp and the meaning of status values
+        are missing.
+      method: https://example.org/methods/payload-semantics-assessment/1.0
+      assessedAt: '2026-11-28T10:00:00Z'
+      report:
+        $ref: https://example.org/reports/weather-observation.json

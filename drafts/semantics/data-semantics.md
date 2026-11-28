@@ -29,11 +29,70 @@ product:
 | **description** (document) | string | OPTIONAL | Human-readable summary of the document. Minimum 1 character; no maximum length is specified. |
 | **sources** (document) | array of strings | OPTIONAL | At least one unique identifier defined in `product.semantics.sources`; each identifier has at least 1 character. No maximum list or identifier length is specified. |
 | **sources** (semantics) | object | OPTIONAL | Named source systems shared by the descriptions. Each key is a source identifier, such as `enterpriseGlossary`. The object MUST contain at least one entry when present; no maximum number or key length is specified. |
-| **payloads** | object | OPTIONAL | Named payload semantic profiles. No maximum number or profile-name length is specified. Include `productSemantics`, `payloads`, or both. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields or a reference to an external semantic document or profile. |
+| **payloads** | object | OPTIONAL | Named payload semantic profiles. No maximum number or profile-name length is specified. Include `productSemantics`, `payloads`, or both. MUST include `default`; additional profiles MAY describe other payloads. Each value uses inline semantic document fields, a reference to an external semantic document or profile, or the assessment wrapper described below. |
 | **default** | object or reference object | REQUIRED when `payloads` is present | The default named payload profile. The requirement also applies after an external semantics object is resolved. |
 | **$ref** | URI-reference | REQUIRED in a reference object | References an external semantics object, semantic document or complete product or payload profile. A reference object has no sibling fields. Minimum 1 character; no maximum length is specified. URI references follow [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html); internal JSON Pointer fragments follow [RFC 6901](https://www.rfc-editor.org/rfc/rfc6901.html). |
 
-A product or payload description MAY instead be a standalone `$ref` to an external semantic document or a complete external profile. A reference object MUST contain only `$ref`; a referenced profile MUST meet the inline document requirements above.
+A product or payload description MAY instead be a standalone `$ref` to an external semantic document or a complete external profile. A reference object MUST contain only `$ref`; a referenced product profile MUST meet the inline document requirements above, and a referenced payload profile MAY also use the wrapper below.
+
+## Payload semantics assessment
+
+A named payload profile MAY use a wrapper containing an `artifact` and an optional `assessment`. The required `artifact` is either an inline semantic document or a standalone `$ref` to a semantic document or complete inline document profile. The wrapper is a payload profile, so access bindings target its name as usual. An externally referenced complete payload profile MAY itself contain the wrapper. A reference object, including `artifact` and `report` references, MUST contain only `$ref`. Existing unwrapped payload profiles remain valid.
+
+| Element | Type | Description |
+|---|---|---|
+| **artifact** | semantic document or reference object | REQUIRED in the wrapper. The semantic artifact being assessed; separate from the assessment. |
+| **artifactVersion** | string | OPTIONAL version of a referenced artifact. Use the inline document's `version` for an inline artifact; if both are supplied, they MUST identify the same version. Minimum 1 character. |
+| **assessment** | object | OPTIONAL compact assessment of this artifact and a defined payload scope at a particular time. All assessment attributes below are OPTIONAL. |
+| **overallScore** | integer | Method-defined summary score, 0–100 inclusive. |
+| **coverage** | integer | Coverage of assessed fields by semantic descriptions or vocabulary mappings, as defined by the method, 0–100. |
+| **mappingConfidence** | integer | Method-based estimate of confidence in field-to-concept mappings, 0–100. |
+| **semanticCompleteness** | integer | Extent to which information needed to interpret applicable fields is available, 0–100. |
+| **consistency** | integer | Extent to which assessed semantics and available sources are free of detected contradictions, 0–100. |
+| **structuralValidity** | string | Exactly `valid`, `invalid`, or `notEvaluated`. |
+| **traceability** | integer | Extent to which mappings and descriptions have identifiable evidence or provenance, 0–100. |
+| **summary** | string | Concise description of deficiencies, uncertainty, and problems. Minimum 1 character. |
+| **method** | URI-reference | Identifier or reference for the method and its version; minimum 1 character. |
+| **assessedAt** | string | Assessment timestamp in RFC 3339 `date-time` format. |
+| **report** | reference object | Optional standalone `$ref` to a detailed report containing, for example, scope, field-level evidence, mappings, indicators and findings. |
+
+An omitted numeric value means not assessed or unavailable, not zero. Omitted `structuralValidity` means no result was supplied; `notEvaluated` explicitly records that the check was not performed. Coverage concerns only the fields actually assessed: a sample establishes coverage only for fields observed in that sample. Mapping confidence is an estimate, not measured accuracy or a calibrated probability unless evaluation evidence supports that interpretation. Completeness depends on the field and use case: a measurement may need a unit while an identifier may not. Structural validity concerns syntax and applicable validation rules; a structurally valid artifact is not necessarily semantically correct.
+
+An assessment refers to the artifact version and scope at the assessment time. Record the time with `assessedAt`, identify the scope in the method, summary, or report, and identify the assessed version using an immutable artifact reference, the inline document's `version`, or `artifactVersion`. If these details are absent, consumers cannot establish the exact version, scope, or time. If the artifact or scope changes, an earlier assessment MUST NOT be assumed to apply. ODPS does not prescribe weights, a formula, or comparability between different methods. A summary does not imply human review or approval; assessment and summary generation may be automated.
+
+```yaml
+product:
+  semantics:
+    payloads:
+      default:
+        $ref: ./semantics/default.ttl
+      weather-observation:
+        artifact:
+          $ref: https://example.org/semantics/weather-observation.ttl
+        artifactVersion: '1.0'
+        assessment:
+          overallScore: 76
+          coverage: 90
+          mappingConfidence: 78
+          semanticCompleteness: 65
+          consistency: 85
+          structuralValidity: valid
+          traceability: 80
+          summary: >-
+            Two observed fields have no vocabulary mapping. Four mappings are
+            uncertain. The unit for air_temp and the meaning of status values
+            are missing.
+          method: https://example.org/methods/payload-semantics-assessment/1.0
+          assessedAt: '2026-11-28T10:00:00Z'
+          report:
+            $ref: https://example.org/reports/weather-observation.json
+```
+
+The scores are illustrative and do not define a calculation. The sample's observed-field scope is stated in the summary; a detailed report can make it explicit. The reference does not convey a media type: transport metadata or content can identify the format.
+
+### Design rationale
+
+The [W3C Data Quality Vocabulary](https://www.w3.org/TR/vocab-dqv/) distinguishes dimensions, metrics, measurements and provenance, informing the separation of indicators, method and evidence. It does not prescribe these ODPS dimensions, calculations or weights. [SHACL](https://www.w3.org/TR/shacl/) validates RDF graphs against defined constraints; conformance does not establish semantic correctness. The [Ontology Alignment Evaluation Initiative](https://oaei.ontologymatching.org/) evaluates matching systems, including reference-alignment comparisons using precision and recall; such reference-based accuracy is different from an estimate in a live assessment. The [FHIR mapping quality scoping review](https://pmc.ncbi.nlm.nih.gov/articles/PMC13687643/) illustrates the distinction between coverage, semantic correctness, terminology accuracy and structural conformance in a domain-specific research framework, not a universal standard. None of these sources prescribes this ODPS profile or its scores.
 
 ### Additional examples
 

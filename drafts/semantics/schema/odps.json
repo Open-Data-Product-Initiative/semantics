@@ -1468,6 +1468,93 @@
                 }
             ]
         },
+        "SemanticAssessment": {
+            "type": "object",
+            "properties": {
+                "overallScore": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "coverage": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "mappingConfidence": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "semanticCompleteness": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "consistency": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "traceability": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "structuralValidity": {
+                    "type": "string",
+                    "enum": [
+                        "valid",
+                        "invalid",
+                        "notEvaluated"
+                    ]
+                },
+                "summary": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "method": {
+                    "type": "string",
+                    "format": "uri-reference",
+                    "minLength": 1
+                },
+                "assessedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "report": {
+                    "$ref": "#/$defs/SemanticReference"
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "PayloadSemanticProfile": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/SemanticProfile"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "artifact": {
+                            "$ref": "#/$defs/SemanticProfile"
+                        },
+                        "artifactVersion": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "assessment": {
+                            "$ref": "#/$defs/SemanticAssessment"
+                        }
+                    },
+                    "required": [
+                        "artifact"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        },
         "SemanticObject": {
             "type": "object",
             "properties": {
@@ -1513,14 +1600,14 @@
                     "type": "object",
                     "properties": {
                         "default": {
-                            "$ref": "#/$defs/SemanticProfile"
+                            "$ref": "#/$defs/PayloadSemanticProfile"
                         }
                     },
                     "required": [
                         "default"
                     ],
                     "additionalProperties": {
-                        "$ref": "#/$defs/SemanticProfile"
+                        "$ref": "#/$defs/PayloadSemanticProfile"
                     },
                     "minProperties": 1
                 }

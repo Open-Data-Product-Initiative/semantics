@@ -136,6 +136,60 @@ class SemanticsTests(unittest.TestCase):
         self.product['product'].pop('semantics')
         self.assertTrue(any('requires product.semantics' in e for e in self.check()[0]))
 
+    def test_assessment_scores_and_optional_values(self):
+        wrapper = {'artifact': {'$ref': './transactions.ttl'}, 'assessment': {}}
+        self.sem['payloads']['transactions'] = wrapper
+        self.assertEqual(self.check()[0], [])
+        for field in ('overallScore', 'coverage', 'mappingConfidence', 'semanticCompleteness', 'consistency', 'traceability'):
+            for value in (0, 100):
+                with self.subTest(field=field, value=value):
+                    wrapper['assessment'] = {field: value}
+                    self.assertEqual(self.check()[0], [])
+            for value in (-1, 101, 1.5, '50', None, True):
+                with self.subTest(field=field, value=value):
+                    wrapper['assessment'] = {field: value}
+                    self.assertTrue(self.check()[0])
+        wrapper.pop('assessment')
+        self.assertEqual(self.check()[0], [])
+
+    def test_assessment_structure_and_references(self):
+        wrapper = {'artifact': {'$ref': './transactions.ttl'}, 'assessment': {}}
+        self.sem['payloads']['transactions'] = wrapper
+        for value in ('valid', 'invalid', 'notEvaluated'):
+            wrapper['assessment'] = {'structuralValidity': value}
+            self.assertEqual(self.check()[0], [])
+        for assessment in ({'structuralValidity': 'unknown'}, {'structuralValidity': None},
+                           {'assessedAt': 'yesterday'}, {'method': 'not a uri'},
+                           {'report': {'$ref': 'report.json', 'description': 'bad'}},
+                           {'reportUrl': 'report.json'}, {'unknown': 1}):
+            with self.subTest(assessment=assessment):
+                wrapper['assessment'] = assessment
+                self.assertTrue(self.check()[0])
+        wrapper['assessment'] = {'method': 'urn:example:method:1', 'assessedAt': '2026-11-28T10:00:00Z', 'report': {'$ref': 'report.json'}}
+        self.assertEqual(self.check()[0], [])
+        wrapper['artifact']['assessment'] = {}
+        self.assertTrue(self.check()[0])
+        self.sem['productSemantics']['assessment'] = {}
+        self.assertTrue(self.check()[0])
+
+    def test_assessment_external_wrapper_resolves_relative_artifact(self):
+        profile = self.root / 'examples/semantics/assessed-profile.yaml'
+        profile.write_text(yaml.safe_dump({'artifact': {'$ref': './transactions.ttl'}, 'artifactVersion': '1.0', 'assessment': {'coverage': 80}}))
+        self.sem['payloads']['transactions'] = {'$ref': './assessed-profile.yaml'}
+        self.assertEqual(self.check()[0], [])
+        (self.root / 'examples/semantics/transactions.ttl').write_text('invalid turtle ;')
+        self.assertTrue(any('invalid Turtle' in e for e in self.check()[0]))
+
+    def test_assessment_inline_artifact_and_missing_artifact(self):
+        self.sem['payloads']['transactions'] = {'artifact': {'format': 'text/turtle', 'version': '1', 'spec': '@prefix ex: <https://example.org/> .'}, 'assessment': {'coverage': 50}}
+        self.assertEqual(self.check()[0], [])
+        self.sem['payloads']['transactions']['artifactVersion'] = '2'
+        self.assertTrue(any('artifactVersion does not match' in e for e in self.check()[0]))
+        self.sem['payloads']['transactions']['artifactVersion'] = '1'
+        self.assertEqual(self.check()[0], [])
+        self.sem['payloads']['transactions'].pop('artifact')
+        self.assertTrue(self.check()[0])
+
 
 if __name__ == '__main__':
     unittest.main()

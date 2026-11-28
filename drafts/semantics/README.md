@@ -10,6 +10,8 @@ Status: **unreleased development draft**. ODPS 4.2 under `source/` remains autho
 
 `sources` is an optional named map at `product.semantics.sources`. Each entry requires `name`, and may have `type`, `url`, `apiURL` and `description`. A document's optional, nonempty `sources` array names the source systems used for it. Names are scoped to this semantics object and must exist in that map. They are not an exhaustive vocabulary inventory or a claim about every statement. Do not put credentials or sensitive sample data in metadata. Source-only and empty semantics objects are invalid: `productSemantics` and/or `payloads` must be present. Payload collections require `default`, including after external resolution. A product document can exist independently of payloads, access and sources.
 
+An optional [payload assessment](data-semantics.md#payload-semantics-assessment) uses a payload profile wrapper with an `artifact` document or standalone reference and separate `assessment`. `artifactVersion` can identify the version of a referenced artifact. Scores are method-specific and do not imply semantic correctness, review or approval. The checker validates the assessment envelope and compares versions when both are inline; it does not verify assessment claims, reports, scope or the version of referenced artifacts.
+
 ## Access bindings
 
 A data access profile may bind one payload using a reference object:
